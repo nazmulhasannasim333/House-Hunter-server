@@ -124,6 +124,72 @@ async function run() {
       res.send(result);
     });
 
+    // add house
+    app.post("/addhouse", async (req, res) => {
+      const newHouse = req.body;
+      const result = await houseCollection.insertOne(newHouse);
+      res.send(result);
+    });
+
+    // update a house
+    app.put("/updatehouse/:id", async (req, res) => {
+      const id = req.params.id;
+      const {
+        address,
+        availability_date,
+        bathrooms,
+        bedrooms,
+        city,
+        house_name,
+        phone_number,
+        picture,
+        rent_per_month,
+        room_size,
+        description,
+      } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateHouse = {
+        $set: {
+          address: address,
+          availability_date: availability_date,
+          bathrooms: bathrooms,
+          bedrooms: bedrooms,
+          city: city,
+          house_name: house_name,
+          phone_number: phone_number,
+          picture: picture,
+          rent_per_month: rent_per_month,
+          room_size: room_size,
+          description: description,
+        },
+      };
+      const result = await houseCollection.updateOne(filter, updateHouse);
+      res.send(result);
+    });
+
+    // Get house by search index
+    const indexKeys = { title: 1, category: 1 };
+    const indexOptions = { name: "house_name" };
+    const result = await houseCollection.createIndex(indexKeys, indexOptions);
+
+    // get search by house_name
+    app.get("/housesearch/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const query = searchText
+        ? { house_name: { $regex: searchText, $options: "i" } }
+        : {};
+      const result = await houseCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // delete a house
+    app.delete("/deletehouse/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await houseCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // get user booking
     app.get("/mybooking/:email", async (req, res) => {
       const email = req.params.email;
