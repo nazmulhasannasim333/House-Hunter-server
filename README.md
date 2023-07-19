@@ -7,4 +7,4 @@
   * Use Custom authentication for signin / signup, use mongodb and JWT, Hash the password use bcrypt.
   * User Information and All documents store in mongodb database.
   * User Information and All documents store in mongodb database.
-  Also know about this project in client side github. <p>Client Side Link : https://github.com/nazmulhasannasim333/House-Hunter <p />
+  * Also know about this project in client side github. <p>Client Side Link : https://github.com/nazmulhasannasim333/House-Hunter <p />
