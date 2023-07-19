@@ -103,8 +103,58 @@ async function run() {
     // House Related API's
     // get all house
     app.get("/houses", async (req, res) => {
-      const result = await houseCollection.find().toArray();
-      res.send(result);
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+
+      const filter = {};
+
+      // Apply city filter if provided
+      if (req.query.city) {
+        filter.city = req.query.city;
+      }
+
+      // Apply bedrooms filter if provided
+      if (req.query.bedrooms) {
+        filter.bedrooms = parseInt(req.query.bedrooms);
+      }
+
+      // Apply bathrooms filter if provided
+      if (req.query.bathrooms) {
+        filter.bathrooms = parseInt(req.query.bathrooms);
+      }
+
+      // Apply room size filter if provided
+      if (req.query.room_size) {
+        filter.room_size = req.query.room_size;
+      }
+
+      // Apply availability filter if provided
+      if (req.query.availability_date) {
+        filter.availability_date = req.query.availability_date;
+      }
+
+      // Apply rent per month range filter if provided
+      if (req.query.minRent || req.query.maxRent) {
+        filter.rent_per_month = {};
+        if (req.query.minRent) {
+          filter.rent_per_month.$gte = parseInt(req.query.minRent);
+        }
+        if (req.query.maxRent) {
+          filter.rent_per_month.$lte = parseInt(req.query.maxRent);
+        }
+      }
+
+      //   Calculate for pagination
+      const totalCount = await houseCollection.countDocuments(filter);
+      const totalPages = Math.ceil(totalCount / limit);
+      const offset = (page - 1) * limit;
+
+      const result = await houseCollection
+        .find(filter)
+        .skip(offset)
+        .limit(limit)
+        .toArray();
+      res.send({ totalPages, currentPage: page, result });
     });
 
     // get house by owner email
@@ -172,7 +222,7 @@ async function run() {
     const indexOptions = { name: "house_name" };
     const result = await houseCollection.createIndex(indexKeys, indexOptions);
 
-    // get search by house_name
+    //  search by house_name
     app.get("/housesearch/:text", async (req, res) => {
       const searchText = req.params.text;
       const query = searchText
@@ -181,6 +231,51 @@ async function run() {
       const result = await houseCollection.find(query).toArray();
       res.send(result);
     });
+
+    // search by filter
+    // app.get("/housesfilter", async (req, res) => {
+    //   const filter = {};
+    //   console.log(req.query.minRent);
+
+    //   // Apply city filter if provided
+    //   if (req.query.city) {
+    //     filter.city = req.query.city;
+    //   }
+
+    //   // Apply bedrooms filter if provided
+    //   if (req.query.bedrooms) {
+    //     filter.bedrooms = parseInt(req.query.bedrooms);
+    //   }
+
+    //   // Apply bathrooms filter if provided
+    //   if (req.query.bathrooms) {
+    //     filter.bathrooms = parseInt(req.query.bathrooms);
+    //   }
+
+    //   // Apply room size filter if provided
+    //   if (req.query.room_size) {
+    //     filter.room_size = req.query.room_size;
+    //   }
+
+    //   // Apply availability filter if provided
+    //   if (req.query.availability_date) {
+    //     filter.availability_date = req.query.availability_date;
+    //   }
+
+    //   // Apply rent per month range filter if provided
+    //   if (req.query.minRent || req.query.maxRent) {
+    //     filter.rent_per_month = {};
+    //     if (req.query.minRent) {
+    //       filter.rent_per_month.$gte = parseInt(req.query.minRent);
+    //     }
+    //     if (req.query.maxRent) {
+    //       filter.rent_per_month.$lte = parseInt(req.query.maxRent);
+    //     }
+    //   }
+
+    //   const result = await houseCollection.find(filter).toArray();
+    //   res.send(result);
+    // });
 
     // delete a house
     app.delete("/deletehouse/:id", async (req, res) => {
