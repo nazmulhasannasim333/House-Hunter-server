@@ -25,7 +25,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const userCollection = client.db("houseDB").collection("users");
     const houseCollection = client.db("houseDB").collection("houses");
@@ -160,8 +160,8 @@ async function run() {
     // get house by owner email
     app.get("/ownhouse/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
-      const result = await houseCollection.find().toArray(query);
+      const query = { owner_email: email };
+      const result = await houseCollection.find(query).toArray(query);
       res.send(result);
     });
 
